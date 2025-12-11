@@ -11,7 +11,6 @@ def handle_reg(username, password):
     hash_obj = hashlib.sha256(salt + password.encode())
     password_hash = hash_obj.digest()
     
-
     record = {
         "username": username,
         "salt": base64.b64encode(salt).decode(), # store as string,
@@ -60,20 +59,21 @@ def handle_otp(type, company):
     elif type == "code":
         code = company
 
+        print(f"OTP CODE: {code}")
         return [200, code]
 
     elif type == "verify":
+        code = company[0]
+        username = company[1]
         # Server URL
         url = "https://127.0.0.1:4444"
 
-        # Body you want to send
-        data = f"otp:verify:{code}"
+        data = f"otp:verify:{code}:{username}"
 
-        # Send POST request (disable SSL verification for self-signed cert)
         response = requests.post(url, data=data, verify=False)
-
         # Print server response
         print(response.text)
+        return response.text
 
 def handle_req(body):
     if ":" not in body:
@@ -88,7 +88,7 @@ def handle_req(body):
        return handle_log(body[1], body[2])
 
     elif body[0] == "otp": # otp:getsecret:username # get user's secret generated
-       return handle_otp(body[1], body[2])
+       return handle_otp(body[1], body[2:])
 
     else:
         return [400, "err"]
