@@ -13,9 +13,11 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         
         res = handle_req(body)
 
+        response_body = b"res:" + str(res[1]).encode()
         self.send_response(res[0])
+        self.send_header('Content-Length', str(len(response_body)))
         self.end_headers()
-        self.wfile.write(b"res:" + str(res[1]).encode())
+        self.wfile.write(response_body)
 
     def do_GET(self):
         print(f"[+] GET request from {self.client_address}")
