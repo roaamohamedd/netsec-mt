@@ -1,5 +1,6 @@
 import http.server
 import ssl
+from handler import *
 
 class MyHandler(http.server.BaseHTTPRequestHandler):
 
@@ -8,11 +9,13 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         body = self.rfile.read(length).decode()
 
         print("\n[+] New message received:")
-        print(body)
+        # handle incoming request
+        
+        res = handle_req(body)
 
-        self.send_response(200)
+        self.send_response(res[0])
         self.end_headers()
-        self.wfile.write(b"Message received")
+        self.wfile.write(b"res:" + str(res[1]).encode())
 
     def do_GET(self):
         print(f"[+] GET request from {self.client_address}")
@@ -20,7 +23,6 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(b"HTTPS server is running")
-
 
 server_address = ("0.0.0.0", 4443)
 httpd = http.server.HTTPServer(server_address, MyHandler)
@@ -31,5 +33,5 @@ context.load_cert_chain(certfile="cert.pem", keyfile="key.pem")
 
 httpd.socket = context.wrap_socket(httpd.socket, server_side=True)
 
-print("✅ HTTPS server running on https://127.0.0.1:4443")
+print("✅ Main server running on https://127.0.0.1:4443")
 httpd.serve_forever()
